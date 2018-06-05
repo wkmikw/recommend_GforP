@@ -3,6 +3,5 @@
 *.iml
 *.pyc
 *.npy
-*.npy
-*.npy
-data/recommend_list.npy
+data
+
