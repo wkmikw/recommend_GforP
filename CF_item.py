@@ -9,6 +9,7 @@ import math
 from multiprocessing import Pool, Process, Queue
 
 from filter import SplitData
+from err_logging import log
 
 def computing_popularity(train):
     #train = np.load('data/train.npy')
@@ -29,7 +30,6 @@ def computing_M_relation(item1, item2, watched):
     sum2 = np.sum(p2)
     return count/math.sqrt(sum1 * sum2) if sum1 and sum2 else 0
 
-
 # 选出K个最大的
 def MAX_K(ele, K):
     Max_list = np.zeros([K, 2]) # min in 0
@@ -47,7 +47,6 @@ def MAX_K(ele, K):
                     break
     return(Max_list)
 
-
 def compute_interest_user(watched, user, popularity, M, Movies_relationship):
     Movie_interest = np.zeros(MAXMOVIE + 1)
     #是否看过
@@ -62,7 +61,6 @@ def compute_interest_user(watched, user, popularity, M, Movies_relationship):
 
     return(MAX_K(Movie_interest, M))
 
-
 def Generate_watched(train):
     # 观看记录矩阵
     watched = np.zeros([MAXUSER + 1, MAXMOVIE + 1], dtype=int)
@@ -72,7 +70,7 @@ def Generate_watched(train):
     return watched
 
 # computing similarity
-# runtime=176s,可考虑进程并发
+@log
 def Computing_similarity(watched):
     Movies_relationship = np.zeros([MAXMOVIE + 1, MAXMOVIE + 1])
     start = time.time()
@@ -90,6 +88,7 @@ def Computing_similarity(watched):
     return Movies_relationship
 
 # computing recommend list
+@log
 def Computing_recommend_list(watched, popularity, Movies_relationship):
     recommend_list = np.zeros([MAXUSER + 1, M], dtype=int)
     for i in range(1, MAXUSER + 1):
@@ -102,6 +101,7 @@ def Computing_recommend_list(watched, popularity, Movies_relationship):
 
 # test
 # initialize real_watch matrix
+@log
 def Test(watched, recommend_list, test):
     real_watch = np.zeros([MAXUSER + 1, MAXMOVIE + 1], dtype=int)
     for ele in test:
