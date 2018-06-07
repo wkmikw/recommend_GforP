@@ -9,7 +9,13 @@ import math
 from multiprocessing import Pool, Process, Queue
 
 from filter import SplitData
-from err_logging import log
+from err_logging import log, Config
+
+if __name__ == '__main__': # 初始化log
+    conf=Config()  
+    logger=conf.getLog()  
+    logger.info('START')  
+
 
 def computing_popularity(train):
     #train = np.load('data/train.npy')
@@ -70,7 +76,7 @@ def Generate_watched(train):
     return watched
 
 # computing similarity
-@log
+@log(logger)
 def Computing_similarity(watched):
     Movies_relationship = np.zeros([MAXMOVIE + 1, MAXMOVIE + 1])
     start = time.time()
@@ -88,7 +94,7 @@ def Computing_similarity(watched):
     return Movies_relationship
 
 # computing recommend list
-@log
+@log(logger)
 def Computing_recommend_list(watched, popularity, Movies_relationship):
     recommend_list = np.zeros([MAXUSER + 1, M], dtype=int)
     for i in range(1, MAXUSER + 1):
@@ -101,7 +107,7 @@ def Computing_recommend_list(watched, popularity, Movies_relationship):
 
 # test
 # initialize real_watch matrix
-@log
+#@log(logger)
 def Test(watched, recommend_list, test):
     real_watch = np.zeros([MAXUSER + 1, MAXMOVIE + 1], dtype=int)
     for ele in test:
@@ -119,7 +125,7 @@ def Test(watched, recommend_list, test):
         for j in range(1, MAXMOVIE + 1):
             if watched[i, j] and recommend[i, j]:
                 count += 1
-    print(count)
+    #print(count)
 
     # recall rate
     real_count = np.sum(real_watch)
@@ -138,6 +144,7 @@ def Test(watched, recommend_list, test):
     return Recall_rate, Precision_rate
 
 # main cycle
+@log(logger)
 def Main_cycle(k, q):
     start = time.time()
     test, train = SplitData(Step, k, 1)
@@ -154,8 +161,8 @@ if __name__ == '__main__':
     
     MAXMOVIE = 1682
     MAXUSER = 943
-    K = 10 # 每部电影计算取的最相似电影数量
-    M = 20 # 推荐数量
+    K = 15 # 每部电影计算取的最相似电影数量
+    M = 15 # 推荐数量
     Step = 11
 
     q = Queue()
@@ -177,6 +184,7 @@ if __name__ == '__main__':
         Recall_rate += value[0]
         Precision_rate += value[1]
         i += 1
-    print('Recall rate: %.2f%%' % (Recall_rate / 11))
-    print('Precision_rate: %.2f%%' % (Precision_rate / 11))
-    print('All subprocesses done.')
+    logger.info('计算取的最相似电影数量: %d \n推荐数量: %d' % (K, M))
+    logger.info('Recall rate: %.2f%%' % (Recall_rate / 11))
+    logger.info('Precision_rate: %.2f%%' % (Precision_rate / 11))
+    logger.info('All subprocesses done.\n')
